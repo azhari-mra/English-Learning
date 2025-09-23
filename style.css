@@ -1,0 +1,306 @@
+:root {
+    --primary-color: #00897b; /* Dark Teal */
+    --secondary-color: #4db6ac; /* Lighter Teal */
+    --background-color: #1e1e1e;
+    --text-color: #ffffff;
+    --button-bg: #212121;
+    --button-hover-bg: #424242;
+    --correct-color: #4caf50;
+    --incorrect-color: #f44336;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px 10px;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+    background-color: #212121;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+h1, h2, h3 {
+    text-align: center;
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.tab-button {
+    flex-grow: 1;
+    padding: 12px;
+    border: none;
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 16px;
+    margin: 0 5px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+.tab-button:first-child { margin-left: 0; }
+.tab-button:last-child { margin-right: 0; }
+
+.tab-button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+.tab-button.active {
+    background-color: var(--primary-color);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    border: 1px solid #424242;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+#add-word-btn, #update-word-btn {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    padding: 15px;
+    cursor: pointer;
+    border-radius: 8px;
+    width: 100%;
+    margin-top: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+#add-word-btn:hover, #update-word-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.word-card {
+    background-color: #212121;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border-left: 5px solid var(--primary-color);
+}
+
+.word-card p {
+    margin: 5px 0;
+    color: var(--text-color);
+}
+
+.word-card .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.word-card .actions button {
+    background-color: #424242;
+    color: var(--text-color);
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.word-card .actions button:hover {
+    background-color: #616161;
+}
+
+.quiz-container {
+    text-align: center;
+}
+
+#quiz-question {
+    font-size: 24px;
+    margin-bottom: 25px;
+    color: var(--text-color);
+}
+
+.quiz-options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.quiz-options button {
+    width: 100%;
+    font-size: 18px;
+    padding: 18px;
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    border: 1px solid #424242;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-weight: bold;
+}
+
+.quiz-options button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+.quiz-options button.correct {
+    background-color: var(--correct-color);
+    border-color: var(--correct-color);
+}
+
+.quiz-options button.incorrect {
+    background-color: var(--incorrect-color);
+    border-color: var(--incorrect-color);
+}
+
+.quiz-category-selector {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.quiz-category-selector button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+.quiz-category-selector button:hover {
+    background-color: var(--secondary-color);
+}
+
+.message {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 1.2em;
+    color: var(--text-color);
+}
+
+/* --- Custom Alert/Confirm Styles --- */
+#message-box {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0s 0.5s;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    width: calc(100% - 40px);
+}
+
+#message-box.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#message-box.success { background-color: var(--correct-color); }
+#message-box.error { background-color: var(--incorrect-color); }
+
+#custom-confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+    padding: 20px;
+}
+
+#custom-confirm-box {
+    background-color: #212121;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    width: 100%;
+    max-width: 350px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    color: var(--text-color);
+}
+
+#custom-confirm-box p {
+    margin-bottom: 25px;
+    font-size: 1.1em;
+}
+
+#custom-confirm-box button {
+    width: 45%;
+    padding: 12px 0;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 0 5px;
+    transition: background-color 0.3s;
+    font-weight: bold;
+}
+
+#confirm-yes {
+    background-color: var(--incorrect-color);
+    color: var(--text-color);
+}
+
+#confirm-no {
+    background-color: #424242;
+    color: var(--text-color);
+}
+
+#confirm-yes:hover { background-color: #d32f2f; }
+#confirm-no:hover { background-color: #616161; }
+
+hr {
+    border-top: 1px solid #424242;
+}
