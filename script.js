@@ -1,3 +1,37 @@
+// أولاً: استيراد المكتبات من Firebase. يجب أن تكون في بداية الملف.
+// ملاحظة: لقد أضفت getDocs لجلب البيانات من Firestore.
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-analytics.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+
+// ثانياً: إعدادات Firebase الخاصة بتطبيقك.
+// هذه المعلومات فريدة لمشروعك، وقد تم تحديثها من الصورة التي أرسلتها.
+const firebaseConfig = {
+  apiKey: "AIzaSyCweV_IuME1qrlbBqS0WAe6o_tNpwyObA0",
+  authDomain: "english-learning-mra.firebaseapp.com",
+  projectId: "english-learning-mra",
+  storageBucket: "english-learning-mra.firebasestorage.app",
+  messagingSenderId: "758573998562",
+  appId: "1:758573998562:web:69ed7e71da2898875ed9bb",
+  measurementId: "G-BTBHSPGXGS"
+};
+
+// ثالثاً: تهيئة Firebase وخدماتها.
+// هذا الجزء ضروري ويجب أن يتم قبل استخدام أي خدمة أخرى.
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+
+// رابعاً: تعريف متغيراتك وبياناتك.
+// هذه البيانات هي التي ستستخدمها في تطبيقك.
+let userWords = {
+    "Nouns": [],
+    "Verbs": [],
+    "Adjectives": [],
+    "Other": [],
+};
+
 const hiddenWords = {
     "Nouns": [
         { en: "apple", ar: "تفاحة", category: "Nouns" },
@@ -129,17 +163,11 @@ const hiddenWords = {
     ],
 };
 
-const userWords = {
-    "Nouns": [],
-    "Verbs": [],
-    "Adjectives": [],
-    "Other": [],
-};
-
 let currentQuizWords = [];
 let currentQuestion = {};
 let wordToEdit = null;
 
+// خامساً: تعريف الدوال.
 function openTab(evt, tabName) {
     let i, tabcontent, tabbuttons;
     tabcontent = document.getElementsByClassName("tab-content");
@@ -180,6 +208,38 @@ function showConfirmation(message, onConfirmCallback) {
         onConfirmCallback(false);
         overlay.style.display = 'none';
     };
+}
+
+// دالة لرفع البيانات إلى Firebase (تستخدم لمرة واحدة فقط).
+// لقد قمت بتعطيل استدعاء هذه الدالة في النهاية لتجنب تكرار رفع البيانات.
+async function uploadQuizData() {
+    try {
+        await addDoc(collection(db, "quiz"), {
+            "nouns": hiddenWords.Nouns,
+            "verbs": hiddenWords.Verbs,
+            "adjectives": hiddenWords.Adjectives,
+            "other": hiddenWords.Other
+        });
+        console.log("Quiz data uploaded successfully!");
+    } catch (e) {
+        console.error("Error adding document: ", e);
+    }
+}
+
+// دالة لجلب البيانات من Firestore.
+// هذا هو ما سيستخدمه تطبيقك بعد الآن لعرض الكلمات.
+async function getQuizData() {
+    const quizCollection = collection(db, "quiz");
+    const quizSnapshot = await getDocs(quizCollection);
+    
+    quizSnapshot.forEach(doc => {
+        const data = doc.data();
+        hiddenWords.Nouns = data.nouns || [];
+        hiddenWords.Verbs = data.verbs || [];
+        hiddenWords.Adjectives = data.adjectives || [];
+        hiddenWords.Other = data.other || [];
+        console.log("Data from Firebase has been loaded.");
+    });
 }
 
 function addWord() {
@@ -345,6 +405,14 @@ function checkAnswer(event) {
     }
 }
 
+// سادساً: استدعاء الدوال عند تحميل الصفحة.
 document.addEventListener('DOMContentLoaded', () => {
+    // قم بتفعيل هذا السطر لمرة واحدة فقط لرفع البيانات إلى Firebase
+    uploadQuizData(); 
+    
+    // بعد رفع البيانات، قم بتعطيل السطر السابق
+    // ثم قم بتفعيل هذا السطر لجلب البيانات من Firebase
+    // getQuizData(); 
+    
     displayWords();
 });
