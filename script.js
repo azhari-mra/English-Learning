@@ -1,343 +1,348 @@
-// أولاً: استيراد المكتبات من Firebase. يجب أن تكون في بداية الملف.
-// ملاحظة: لقد أضفت getDocs لجلب البيانات من Firestore.
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-analytics.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+// UI elements
+const messageBox = document.getElementById('message-box');
+const confirmOverlay = document.getElementById('custom-confirm-overlay');
+const confirmMessageElem = document.getElementById('confirm-message');
+const confirmYesBtn = document.getElementById('confirm-yes');
+const confirmNoBtn = document.getElementById('confirm-no');
+const userInfoElem = document.getElementById('user-info');
 
+const wordEnInput = document.getElementById('word-en');
+const wordArInput = document.getElementById('word-ar');
+const wordImageInput = document.getElementById('word-image');
+const wordCategorySelect = document.getElementById('word-category');
+const addWordBtn = document.getElementById('add-word-btn');
+const updateWordBtn = document.getElementById('update-word-btn');
+const vocabularyList = document.getElementById('vocabulary-list');
+const filterCategorySelect = document.getElementById('filter-category');
 
-// ثانياً: إعدادات Firebase الخاصة بتطبيقك.
-// هذه المعلومات فريدة لمشروعك، وقد تم تحديثها من الصورة التي أرسلتها.
-const firebaseConfig = {
-  apiKey: "AIzaSyCweV_IuME1qrlbBqS0WAe6o_tNpwyObA0",
-  authDomain: "english-learning-mra.firebaseapp.com",
-  projectId: "english-learning-mra",
-  storageBucket: "english-learning-mra.firebasestorage.app",
-  messagingSenderId: "758573998562",
-  appId: "1:758573998562:web:69ed7e71da2898875ed9bb",
-  measurementId: "G-BTBHSPGXGS"
-};
+const quizStartSection = document.getElementById('quiz-start');
+const quizQuestionsSection = document.getElementById('quiz-questions');
+const quizQuestionElem = document.getElementById('quiz-question');
+const quizOptionsBtns = quizQuestionsSection.querySelectorAll('.quiz-options button');
+const quizMessageElem = document.getElementById('quiz-message');
 
-// ثالثاً: تهيئة Firebase وخدماتها.
-// هذا الجزء ضروري ويجب أن يتم قبل استخدام أي خدمة أخرى.
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
+let currentWordId = null;
+let vocabularyData = [];
+let quizWordsList = [];
+let currentQuestionIndex = 0;
 
-// رابعاً: تعريف متغيراتك وبياناتك.
-// هذه البيانات هي التي ستستخدمها في تطبيقك.
-let userWords = {
-    "Nouns": [],
-    "Verbs": [],
-    "Adjectives": [],
-    "Other": [],
-};
+// Custom message box and confirmation dialog
+function showMessage(message) {
+    messageBox.textContent = message;
 
-const hiddenWords = {
-    "Nouns": [
-        { en: "apple", ar: "تفاحة", category: "Nouns" },
-        { en: "book", ar: "كتاب", category: "Nouns" },
-        { en: "house", ar: "منزل", category: "Nouns" },
-        { en: "car", ar: "سيارة", category: "Nouns" },
-        { en: "tree", ar: "شجرة", category: "Nouns" },
-        { en: "computer", ar: "كمبيوتر", category: "Nouns" },
-        { en: "phone", ar: "هاتف", category: "Nouns" },
-        { en: "table", ar: "طاولة", category: "Nouns" },
-        { en: "chair", ar: "كرسي", category: "Nouns" },
-        { en: "window", ar: "نافذة", category: "Nouns" },
-        { en: "door", ar: "باب", category: "Nouns" },
-        { en: "sun", ar: "شمس", category: "Nouns" },
-        { en: "moon", ar: "قمر", category: "Nouns" },
-        { en: "water", ar: "ماء", category: "Nouns" },
-        { en: "fire", ar: "نار", category: "Nouns" },
-        { en: "city", ar: "مدينة", category: "Nouns" },
-        { en: "country", ar: "بلد", category: "Nouns" },
-        { en: "school", ar: "مدرسة", category: "Nouns" },
-        { en: "hospital", ar: "مستشفى", category: "Nouns" },
-        { en: "market", ar: "سوق", category: "Nouns" },
-        { en: "friend", ar: "صديق", category: "Nouns" },
-        { en: "family", ar: "عائلة", category: "Nouns" },
-        { en: "food", ar: "طعام", category: "Nouns" },
-        { en: "drink", ar: "شراب", category: "Nouns" },
-        { en: "animal", ar: "حيوان", category: "Nouns" },
-        { en: "plant", ar: "نبات", category: "Nouns" },
-        { en: "money", ar: "مال", category: "Nouns" },
-        { en: "time", ar: "وقت", category: "Nouns" },
-        { en: "work", ar: "عمل", category: "Nouns" },
-        { en: "home", ar: "منزل", category: "Nouns" },
-    ],
-    "Verbs": [
-        { en: "run", ar: "يركض", category: "Verbs" },
-        { en: "eat", ar: "يأكل", category: "Verbs" },
-        { en: "sleep", ar: "ينام", category: "Verbs" },
-        { en: "read", ar: "يقرأ", category: "Verbs" },
-        { en: "write", ar: "يكتب", category: "Verbs" },
-        { en: "talk", ar: "يتحدث", category: "Verbs" },
-        { en: "listen", ar: "يستمع", category: "Verbs" },
-        { en: "play", ar: "يلعب", category: "Verbs" },
-        { en: "walk", ar: "يمشي", category: "Verbs" },
-        { en: "drive", ar: "يقود", category: "Verbs" },
-        { en: "sing", ar: "يغني", category: "Verbs" },
-        { en: "dance", ar: "يرقص", category: "Verbs" },
-        { en: "swim", ar: "يسبح", category: "Verbs" },
-        { en: "fly", ar: "يطير", category: "Verbs" },
-        { en: "jump", ar: "يقفز", category: "Verbs" },
-        { en: "go", ar: "يذهب", category: "Verbs" },
-        { en: "come", ar: "يأتي", category: "Verbs" },
-        { en: "see", ar: "يرى", category: "Verbs" },
-        { en: "hear", ar: "يسمع", category: "Verbs" },
-        { en: "feel", ar: "يشعر", category: "Verbs" },
-        { en: "think", ar: "يفكر", category: "Verbs" },
-        { en: "know", ar: "يعرف", category: "Verbs" },
-        { en: "want", ar: "يريد", category: "Verbs" },
-        { en: "need", ar: "يحتاج", category: "Verbs" },
-        { en: "like", ar: "يحب", category: "Verbs" },
-        { en: "love", ar: "يعشق", category: "Verbs" },
-        { en: "help", ar: "يساعد", category: "Verbs" },
-        { en: "ask", ar: "يسأل", category: "Verbs" },
-        { en: "answer", ar: "يجيب", category: "Verbs" },
-        { en: "start", ar: "يبدأ", category: "Verbs" },
-    ],
-    "Adjectives": [
-        { en: "happy", ar: "سعيد", category: "Adjectives" },
-        { en: "sad", ar: "حزين", category: "Adjectives" },
-        { en: "big", ar: "كبير", category: "Adjectives" },
-        { en: "small", ar: "صغير", category: "Adjectives" },
-        { en: "beautiful", ar: "جميل", category: "Adjectives" },
-        { en: "ugly", ar: "قبيح", category: "Adjectives" },
-        { en: "fast", ar: "سريع", category: "Adjectives" },
-        { en: "slow", ar: "بطيء", category: "Adjectives" },
-        { en: "new", ar: "جديد", category: "Adjectives" },
-        { en: "old", ar: "قديم", category: "Adjectives" },
-        { en: "tall", ar: "طويل", category: "Adjectives" },
-        { en: "short", ar: "قصير", category: "Adjectives" },
-        { en: "strong", ar: "قوي", category: "Adjectives" },
-        { en: "weak", ar: "ضعيف", category: "Adjectives" },
-        { en: "hot", ar: "حار", category: "Adjectives" },
-        { en: "cold", ar: "بارد", category: "Adjectives" },
-        { en: "easy", ar: "سهل", category: "Adjectives" },
-        { en: "difficult", ar: "صعب", category: "Adjectives" },
-        { en: "good", ar: "جيد", category: "Adjectives" },
-        { en: "bad", ar: "سيء", category: "Adjectives" },
-        { en: "clean", ar: "نظيف", category: "Adjectives" },
-        { en: "dirty", ar: "قذر", category: "Adjectives" },
-        { en: "rich", ar: "غني", category: "Adjectives" },
-        { en: "poor", ar: "فقير", category: "Adjectives" },
-        { en: "full", ar: "ممتلئ", category: "Adjectives" },
-        { en: "empty", ar: "فارغ", category: "Adjectives" },
-        { en: "smart", ar: "ذكي", category: "Adjectives" },
-        { en: "stupid", ar: "غبي", category: "Adjectives" },
-        { en: "loud", ar: "مرتفع الصوت", category: "Adjectives" },
-        { en: "quiet", ar: "هادئ", category: "Adjectives" },
-    ],
-    "Other": [
-        { en: "on", ar: "على", category: "Other" },
-        { en: "in", ar: "في", category: "Other" },
-        { en: "under", ar: "تحت", category: "Other" },
-        { en: "and", ar: "و", category: "Other" },
-        { en: "but", ar: "لكن", category: "Other" },
-        { en: "with", ar: "مع", category: "Other" },
-        { en: "to", ar: "إلى", category: "Other" },
-        { en: "from", ar: "من", category: "Other" },
-        { en: "he", ar: "هو", category: "Other" },
-        { en: "she", ar: "هي", category: "Other" },
-        { en: "they", ar: "هم", category: "Other" },
-        { en: "we", ar: "نحن", category: "Other" },
-        { en: "you", ar: "أنت", category: "Other" },
-        { en: "I", ar: "أنا", category: "Other" },
-        { en: "it", ar: "هو/هي (لغير العاقل)", category: "Other" },
-        { en: "by", ar: "بواسطة", category: "Other" },
-        { en: "for", ar: "لأجل", category: "Other" },
-        { en: "of", ar: "من", category: "Other" },
-        { en: "at", ar: "في", category: "Other" },
-        { en: "about", ar: "حول", category: "Other" },
-        { en: "then", ar: "ثم", category: "Other" },
-        { en: "so", ar: "لذلك", category: "Other" },
-        { en: "because", ar: "لأن", category: "Other" },
-        { en: "if", ar: "إذا", category: "Other" },
-        { en: "or", ar: "أو", category: "Other" },
-        { en: "also", ar: "أيضًا", category: "Other" },
-        { en: "here", ar: "هنا", category: "Other" },
-        { en: "there", ar: "هناك", category: "Other" },
-        { en: "now", ar: "الآن", category: "Other" },
-        { en: "ever", ar: "أبدًا", category: "Other" },
-    ],
-};
-
-let currentQuizWords = [];
-let currentQuestion = {};
-let wordToEdit = null;
-
-// خامساً: تعريف الدوال.
-function openTab(evt, tabName) {
-    let i, tabcontent, tabbuttons;
-    tabcontent = document.getElementsByClassName("tab-content");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
+    if (message.includes("Incorrect!")) {
+        messageBox.classList.remove('correct');
+        messageBox.classList.add('incorrect');
+    } else if (message.includes("Correct!")) {
+        messageBox.classList.remove('incorrect');
+        messageBox.classList.add('correct');
+    } else {
+        messageBox.classList.remove('incorrect', 'correct');
     }
-    tabbuttons = document.getElementsByClassName("tab-button");
-    for (i = 0; i < tabbuttons.length; i++) {
-        tabbuttons[i].className = tabbuttons[i].className.replace(" active", "");
-    }
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
-}
 
-function showMessage(message, type = 'info', duration = 3000) {
-    const msgBox = document.getElementById('message-box');
-    msgBox.textContent = message;
-    msgBox.className = `show ${type}`;
+    messageBox.style.display = 'block';
+    messageBox.style.opacity = '1';
     setTimeout(() => {
-        msgBox.className = '';
-    }, duration);
+        messageBox.style.opacity = '0';
+        setTimeout(() => {
+            messageBox.style.display = 'none';
+            messageBox.classList.remove('incorrect', 'correct');
+        }, 300);
+    }, 3000);
 }
 
-function showConfirmation(message, onConfirmCallback) {
-    const overlay = document.getElementById('custom-confirm-overlay');
-    const confirmMsg = document.getElementById('confirm-message');
-    const confirmYes = document.getElementById('confirm-yes');
-    const confirmNo = document.getElementById('confirm-no');
-
-    confirmMsg.textContent = message;
-    overlay.style.display = 'flex';
-
-    confirmYes.onclick = () => {
-        onConfirmCallback(true);
-        overlay.style.display = 'none';
-    };
-    confirmNo.onclick = () => {
-        onConfirmCallback(false);
-        overlay.style.display = 'none';
-    };
-}
-
-// دالة لرفع البيانات إلى Firebase (تستخدم لمرة واحدة فقط).
-// لقد قمت بتعطيل استدعاء هذه الدالة في النهاية لتجنب تكرار رفع البيانات.
-async function uploadQuizData() {
-    try {
-        await addDoc(collection(db, "quiz"), {
-            "nouns": hiddenWords.Nouns,
-            "verbs": hiddenWords.Verbs,
-            "adjectives": hiddenWords.Adjectives,
-            "other": hiddenWords.Other
-        });
-        console.log("Quiz data uploaded successfully!");
-    } catch (e) {
-        console.error("Error adding document: ", e);
-    }
-}
-
-// دالة لجلب البيانات من Firestore.
-// هذا هو ما سيستخدمه تطبيقك بعد الآن لعرض الكلمات.
-async function getQuizData() {
-    const quizCollection = collection(db, "quiz");
-    const quizSnapshot = await getDocs(quizCollection);
-    
-    quizSnapshot.forEach(doc => {
-        const data = doc.data();
-        hiddenWords.Nouns = data.nouns || [];
-        hiddenWords.Verbs = data.verbs || [];
-        hiddenWords.Adjectives = data.adjectives || [];
-        hiddenWords.Other = data.other || [];
-        console.log("Data from Firebase has been loaded.");
+function showConfirm(message) {
+    return new Promise((resolve) => {
+        confirmMessageElem.textContent = message;
+        confirmOverlay.style.display = 'flex';
+        const onYes = () => {
+            confirmOverlay.style.display = 'none';
+            confirmYesBtn.removeEventListener('click', onYes);
+            confirmNoBtn.removeEventListener('click', onNo);
+            resolve(true);
+        };
+        const onNo = () => {
+            confirmOverlay.style.display = 'none';
+            confirmYesBtn.removeEventListener('click', onYes);
+            confirmNoBtn.removeEventListener('click', onNo);
+            resolve(false);
+        };
+        confirmYesBtn.addEventListener('click', onYes);
+        confirmNoBtn.addEventListener('click', onNo);
     });
 }
 
+function playIncorrectSound() {
+    // Create a simple beep sound for incorrect answer
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 200;
+    oscillator.type = 'square';
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+}
+
+function playCorrectSound() {
+    // Create a pleasant sound for correct answer
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+}
+
+// --- Vocabulary Functions ---
+ 
 function addWord() {
-    const wordEn = document.getElementById('word-en').value.toLowerCase().trim();
-    const wordAr = document.getElementById('word-ar').value.trim();
-    const wordImage = document.getElementById('word-image').value.trim();
-    const wordCategory = document.getElementById('word-category').value;
+    const en = wordEnInput.value.trim();
+    const ar = wordArInput.value.trim();
+    const img = wordImageInput.value.trim();
+    const category = wordCategorySelect.value;
 
-    if (wordEn && wordAr) {
-        const newWord = { en: wordEn, ar: wordAr, img: wordImage, category: wordCategory };
-        userWords[wordCategory].push(newWord);
-        showMessage(`Added '${wordEn}'!`, 'success');
-        displayWords();
-        document.getElementById('word-en').value = '';
-        document.getElementById('word-ar').value = '';
-        document.getElementById('word-image').value = '';
-    } else {
-        showMessage('Please fill in both English and Arabic word fields.', 'error');
+    if (!en || !ar) {
+        showMessage("Please enter both English and Arabic words.");
+        return;
     }
-}
 
-function displayWords() {
-    const list = document.getElementById('vocabulary-list');
-    list.innerHTML = '';
-    for (const category in userWords) {
-        userWords[category].forEach((word) => {
-            const wordCard = document.createElement('div');
-            wordCard.className = 'word-card';
-            wordCard.innerHTML = `
-                <div>
-                    <p><strong>${word.en}</strong> (${word.category})</p>
-                    <p>${word.ar}</p>
-                    ${word.img ? `<img src="${word.img}" alt="${word.en}" style="max-width: 100%; height: auto; margin-top: 10px; border-radius: 8px;">` : ''}
-                </div>
-                <div class="actions">
-                    <button onclick="pronounceWord('${word.en}')">🔊</button>
-                    <button onclick="editWord('${word.en}', '${word.category}')">✏️</button>
-                    <button onclick="deleteWord('${word.en}', '${word.category}')">🗑️</button>
-                </div>
-            `;
-            list.appendChild(wordCard);
-        });
-    }
-}
-
-function pronounceWord(text) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    speechSynthesis.speak(utterance);
-}
-
-function editWord(englishWord, category) {
-    wordToEdit = userWords[category].find(w => w.en === englishWord);
-    if (wordToEdit) {
-        document.getElementById('word-en').value = wordToEdit.en;
-        document.getElementById('word-ar').value = wordToEdit.ar;
-        document.getElementById('word-image').value = wordToEdit.img;
-        document.getElementById('word-category').value = wordToEdit.category;
-        
-        document.getElementById('add-word-btn').style.display = 'none';
-        document.getElementById('update-word-btn').style.display = 'block';
-    }
+    const newWord = {
+        id: Date.now().toString(),
+        english: en,
+        arabic: ar,
+        image: img,
+        category: category,
+        createdAt: new Date().toISOString()
+    };
+    
+    vocabularyData.push(newWord);
+    showMessage("✨ Word added successfully!");
+    clearInputs();
+    displayWords();
 }
 
 function updateWord() {
-    if (wordToEdit) {
-        const newEn = document.getElementById('word-en').value.toLowerCase().trim();
-        const newAr = document.getElementById('word-ar').value.trim();
-        const newImage = document.getElementById('word-image').value.trim();
-        const newCategory = document.getElementById('word-category').value;
-        
-        userWords[wordToEdit.category] = userWords[wordToEdit.category].filter(w => w.en !== wordToEdit.en);
-        
-        userWords[newCategory].push({ en: newEn, ar: newAr, img: newImage, category: newCategory });
-        
-        showMessage(`Word '${wordToEdit.en}' updated successfully!`, 'success');
-        
-        document.getElementById('word-en').value = '';
-        document.getElementById('word-ar').value = '';
-        document.getElementById('word-image').value = '';
-        document.getElementById('add-word-btn').style.display = 'block';
-        document.getElementById('update-word-btn').style.display = 'none';
-        wordToEdit = null;
+    if (!currentWordId) return;
+
+    const en = wordEnInput.value.trim();
+    const ar = wordArInput.value.trim();
+    const img = wordImageInput.value.trim();
+    const category = wordCategorySelect.value;
+    
+    if (!en || !ar) {
+        showMessage("Please enter both English and Arabic words.");
+        return;
+    }
+
+    const wordToUpdate = vocabularyData.find(w => w.id === currentWordId);
+    if (wordToUpdate) {
+        wordToUpdate.english = en;
+        wordToUpdate.arabic = ar;
+        wordToUpdate.image = img;
+        wordToUpdate.category = category;
+        showMessage("💾 Word updated successfully!");
+        clearInputs();
+        currentWordId = null;
+        addWordBtn.style.display = 'block';
+        updateWordBtn.style.display = 'none';
         displayWords();
     }
 }
 
-function deleteWord(englishWord, category) {
-    showConfirmation(`Are you sure you want to delete '${englishWord}'?`, (isConfirmed) => {
-        if (isConfirmed) {
-            userWords[category] = userWords[category].filter(word => word.en !== englishWord);
-            displayWords();
-            showMessage(`Word '${englishWord}' deleted.`, 'success');
-        }
+async function deleteWord(id) {
+    const confirmed = await showConfirm("Are you sure you want to delete this word?");
+    if (!confirmed) return;
+
+    vocabularyData = vocabularyData.filter(word => word.id !== id);
+    showMessage("🗑️ Word deleted successfully!");
+    displayWords();
+}
+
+function displayWords() {
+    vocabularyList.innerHTML = '';
+    const selectedCategory = filterCategorySelect.value;
+
+    let filteredWords = vocabularyData;
+    if (selectedCategory !== 'All') {
+        filteredWords = vocabularyData.filter(word => word.category === selectedCategory);
+    }
+
+    const sortedWords = [...filteredWords].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    if (sortedWords.length === 0) {
+        vocabularyList.innerHTML = '<p style="text-align: center; color: rgba(255, 255, 255, 0.6); margin-top: 2rem; font-size: 1.1rem;">No words found in this category. Add a new word! 📝</p>';
+        return;
+    }
+
+    sortedWords.forEach(word => {
+        const wordItem = document.createElement('div');
+        wordItem.className = 'word-item';
+        wordItem.innerHTML = `
+            <div class="word-content">
+                <div class="word-details">
+                    <p>${word.english}</p>
+                    <p>${word.arabic}</p>
+                    <p>Category: ${word.category}</p>
+                </div>
+                <button class="speak-btn" data-word="${word.english}"></button>
+            </div>
+            ${word.image ? `<img src="${word.image}" alt="${word.english}">` : ''}
+            <div class="word-actions">
+                <button class="bg-blue-600 edit-btn" data-id="${word.id}">✏️ Edit</button>
+                <button class="bg-red-600 delete-btn" data-id="${word.id}">🗑️ Delete</button>
+            </div>
+        `;
+        vocabularyList.appendChild(wordItem);
+    });
+
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.target.dataset.id;
+            const wordToEdit = vocabularyData.find(w => w.id === id);
+            if (wordToEdit) {
+                wordEnInput.value = wordToEdit.english;
+                wordArInput.value = wordToEdit.arabic;
+                wordImageInput.value = wordToEdit.image || '';
+                wordCategorySelect.value = wordToEdit.category;
+                currentWordId = id;
+                addWordBtn.style.display = 'none';
+                updateWordBtn.style.display = 'block';
+                
+                // Scroll to top of vocabulary section
+                document.getElementById('vocabulary').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.target.dataset.id;
+            deleteWord(id);
+        });
+    });
+
+    document.querySelectorAll('.speak-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const wordToSpeak = e.currentTarget.dataset.word;
+            speakEnglishWord(wordToSpeak);
+        });
     });
 }
 
-function shuffle(array) {
+function clearInputs() {
+    wordEnInput.value = '';
+    wordArInput.value = '';
+    wordImageInput.value = '';
+    wordCategorySelect.value = 'Nouns';
+}
+
+// --- Quiz Functions ---
+
+function startQuiz(category) {
+    const filteredWords = vocabularyData.filter(w => w.category === category);
+
+    if (filteredWords.length < 4) {
+        quizMessageElem.textContent = `Not enough words in the '${category}' category. Add at least 4 words to start a quiz. 📚`;
+        return;
+    }
+
+    quizWordsList = shuffleArray([...filteredWords]);
+    currentQuestionIndex = 0;
+
+    quizMessageElem.textContent = '';
+    quizStartSection.style.display = 'none';
+    quizQuestionsSection.style.display = 'block';
+
+    generateQuestion();
+}
+
+function generateQuestion() {
+    if (currentQuestionIndex >= quizWordsList.length) {
+        endQuiz();
+        return;
+    }
+
+    const correctWord = quizWordsList[currentQuestionIndex];
+    const otherWords = vocabularyData.filter(w => w.id !== correctWord.id && w.category === correctWord.category);
+    const quizOptions = [correctWord, ...getRandomWords(otherWords, 3)];
+
+    quizQuestionElem.textContent = `What is the English word for "${correctWord.arabic}"? 🤔`;
+    shuffleArray(quizOptions);
+
+    quizOptionsBtns.forEach((btn, index) => {
+        btn.textContent = quizOptions[index].english;
+        btn.dataset.isCorrect = quizOptions[index].id === correctWord.id;
+        btn.classList.remove('bg-green-600', 'bg-red-600');
+        btn.classList.add('bg-gray-600');
+        btn.disabled = false;
+    });
+}
+
+function checkAnswer(event) {
+    const isCorrect = event.target.dataset.isCorrect === 'true';
+    
+    quizOptionsBtns.forEach(btn => {
+        btn.disabled = true;
+        if (btn.dataset.isCorrect === 'true') {
+            btn.classList.remove('bg-gray-600');
+            btn.classList.add('bg-green-600');
+        } else if (btn === event.target) {
+            btn.classList.remove('bg-gray-600');
+            btn.classList.add('bg-red-600');
+        }
+    });
+
+    const message = isCorrect ? "🎉 Correct! Great job!" : "❌ Incorrect! Better luck next time!";
+    showMessage(message);
+
+    if (isCorrect) {
+        playCorrectSound();
+    } else {
+        playIncorrectSound();
+    }
+
+    setTimeout(() => {
+        currentQuestionIndex++;
+        generateQuestion();
+    }, 1500);
+}
+
+function endQuiz() {
+    showMessage("🏆 Quiz finished! Well done!");
+    setTimeout(() => {
+        quizQuestionsSection.style.display = 'none';
+        quizStartSection.style.display = 'flex';
+        quizOptionsBtns.forEach(btn => {
+            btn.disabled = false;
+            btn.classList.remove('bg-green-600', 'bg-red-600');
+            btn.classList.add('bg-gray-600');
+        });
+    }, 2000);
+}
+
+// --- Utility Functions ---
+
+function getRandomWords(arr, num) {
+    const shuffled = [...arr].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, num);
+}
+
+function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
@@ -345,74 +350,82 @@ function shuffle(array) {
     return array;
 }
 
-function startQuiz(category) {
-    const userWordsInCategory = userWords[category];
-    if (userWordsInCategory.length < 4) {
-        document.getElementById('quiz-message').textContent = 'Please add at least 4 words of your own to this category to start the quiz.';
-        return;
+function speakEnglishWord(text) {
+    if (text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
+        utterance.pitch = 1.1;
+        window.speechSynthesis.speak(utterance);
     }
-    
-    document.getElementById('quiz-message').textContent = '';
-    currentQuizWords = shuffle([...userWordsInCategory]);
-    document.getElementById('quiz-start').style.display = 'none';
-    document.getElementById('quiz-questions').style.display = 'block';
-    nextQuestion(category);
 }
 
-function nextQuestion(category) {
-    if (currentQuizWords.length === 0) {
-        showMessage("Quiz finished! You've gone through all your words in this category.", 'info', 5000);
-        document.getElementById('quiz-start').style.display = 'block';
-        document.getElementById('quiz-questions').style.display = 'none';
-        return;
-    }
+// --- Event Listeners & Initial State ---
 
-    currentQuestion = currentQuizWords.pop();
-    document.getElementById('quiz-question').textContent = `What is the Arabic meaning of "${currentQuestion.en}"?`;
-    
-    const allWordsInCategories = Object.values(hiddenWords).flat().concat(Object.values(userWords).flat());
-    const incorrectOptions = shuffle(allWordsInCategories.filter(w => w.ar !== currentQuestion.ar)).slice(0, 3).map(w => w.ar);
-    const options = shuffle([currentQuestion.ar, ...incorrectOptions]);
-
-    const buttons = document.querySelectorAll('.quiz-options button');
-    buttons.forEach((button, index) => {
-        button.textContent = options[index];
-        button.classList.remove('correct', 'incorrect');
+document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', (e) => {
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        e.target.classList.add('active');
+        const tabId = e.target.dataset.tab;
+        document.getElementById(tabId).classList.add('active');
     });
-}
+});
 
-function checkAnswer(event) {
-    const selectedAnswer = event.target.textContent;
-    const buttons = document.querySelectorAll('.quiz-options button');
-    
-    if (selectedAnswer === currentQuestion.ar) {
-        event.target.classList.add('correct');
-        setTimeout(() => {
-            showMessage('Correct! 🎉', 'success');
-            nextQuestion(currentQuestion.category);
-        }, 500);
-    } else {
-        event.target.classList.add('incorrect');
-        buttons.forEach(button => {
-            if (button.textContent === currentQuestion.ar) {
-                button.classList.add('correct');
+addWordBtn.addEventListener('click', addWord);
+updateWordBtn.addEventListener('click', updateWord);
+filterCategorySelect.addEventListener('change', displayWords);
+
+// Add enter key support for inputs
+[wordEnInput, wordArInput, wordImageInput].forEach(input => {
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            if (currentWordId) {
+                updateWord();
+            } else {
+                addWord();
             }
-        });
-        setTimeout(() => {
-            showMessage('Incorrect. 😞', 'error');
-            buttons.forEach(button => button.classList.remove('correct', 'incorrect'));
-        }, 100);
-    }
-}
+        }
+    });
+});
 
-// سادساً: استدعاء الدوال عند تحميل الصفحة.
+document.querySelectorAll('#quiz-start button[data-category]').forEach(button => {
+    button.addEventListener('click', (e) => {
+        const category = e.target.dataset.category;
+        startQuiz(category);
+    });
+});
+
+quizOptionsBtns.forEach(btn => {
+    btn.addEventListener('click', checkAnswer);
+});
+
+// Initial load
 document.addEventListener('DOMContentLoaded', () => {
-    // قم بتفعيل هذا السطر لمرة واحدة فقط لرفع البيانات إلى Firebase
-    uploadQuizData(); 
-    
-    // بعد رفع البيانات، قم بتعطيل السطر السابق
-    // ثم قم بتفعيل هذا السطر لجلب البيانات من Firebase
-    // getQuizData(); 
-    
     displayWords();
+    userInfoElem.style.display = 'none';
+    
+    // Add some sample data if none exists
+    if (vocabularyData.length === 0) {
+        vocabularyData = [
+            {
+                id: '1',
+                english: 'Hello',
+                arabic: 'مرحبا',
+                image: '',
+                category: 'Other',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '2',
+                english: 'Book',
+                arabic: 'كتاب',
+                image: '',
+                category: 'Nouns',
+                createdAt: new Date().toISOString()
+            }
+        ];
+        displayWords();
+    }
 });

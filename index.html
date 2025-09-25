@@ -4,27 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>English Learning MRA</title>
-
-
-
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div id="user-info"></div>
     <div id="message-box"></div>
     <div id="custom-confirm-overlay">
         <div id="custom-confirm-box">
             <p id="confirm-message"></p>
-            <button id="confirm-yes">Yes</button>
-            <button id="confirm-no">No</button>
+            <div class="flex justify-center mt-4">
+                <button id="confirm-yes" class="bg-red-600">Yes</button>
+                <button id="confirm-no" class="bg-gray-600 ml-2">No</button>
+            </div>
         </div>
     </div>
     
     <div class="container">
-        <h1>English Learning App</h1>
+        <h1>🌟 English Learning App</h1>
 
         <div class="tabs">
-            <button class="tab-button active" onclick="openTab(event, 'vocabulary')">Vocabulary</button>
-            <button class="tab-button" onclick="openTab(event, 'quiz')">Quiz</button>
+            <button class="tab-button active" data-tab="vocabulary">📚 Vocabulary</button>
+            <button class="tab-button" data-tab="quiz">🧠 Quiz</button>
         </div>
 
         <div id="vocabulary" class="tab-content active">
@@ -50,42 +51,51 @@
                     <option value="Other">Other</option>
                 </select>
             </div>
-            <button id="add-word-btn" onclick="addWord()">Add Word</button>
-            <button id="update-word-btn" style="display: none;" onclick="updateWord()">Save Changes</button>
+            <div class="flex justify-center gap-4 mt-4">
+                <button id="add-word-btn">✨ Add Word</button>
+                <button id="update-word-btn" style="display: none;">💾 Save Changes</button>
+            </div>
 
-            <hr style="border-top: 1px solid #424242; margin: 25px 0;">
-            <h3>Your Words</h3>
-            <div id="vocabulary-list">
-                </div>
+            <hr style="border: 1px solid rgba(255, 255, 255, 0.2); margin: 2rem 0;">
+            <h3>Your Words Collection</h3>
+            <div class="form-group">
+                <label for="filter-category">Filter by Category:</label>
+                <select id="filter-category">
+                    <option value="All">All</option>
+                    <option value="Nouns">Nouns</option>
+                    <option value="Verbs">Verbs</option>
+                    <option value="Adjectives">Adjectives</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div id="vocabulary-list"></div>
         </div>
 
         <div id="quiz" class="tab-content">
-            <h2>Quiz Section</h2>
-            <div id="quiz-start" class="quiz-category-selector">
+            <h2>Quiz Challenge</h2>
+            <div id="quiz-start" class="quiz-category-selector text-center">
                 <h3>Choose a Category:</h3>
-                <button onclick="startQuiz('Nouns')">Nouns</button>
-                <button onclick="startQuiz('Verbs')">Verbs</button>
-                <button onclick="startQuiz('Adjectives')">Adjectives</button>
-                <button onclick="startQuiz('Other')">Other</button>
-                <p id="quiz-message" class="message"></p>
+                <div>
+                    <button class="bg-purple-600" data-category="Nouns">📝 Nouns</button>
+                    <button class="bg-purple-600" data-category="Verbs">⚡ Verbs</button>
+                    <button class="bg-purple-600" data-category="Adjectives">🎨 Adjectives</button>
+                    <button class="bg-purple-600" data-category="Other">🔮 Other</button>
+                </div>
+                <p id="quiz-message" style="color: #ff6b6b; margin-top: 1rem; font-weight: 500;"></p>
             </div>
             
-            <div id="quiz-questions" style="display: none;">
+            <div id="quiz-questions" style="display: none;" class="text-center">
                 <p id="quiz-question"></p>
                 <div class="quiz-options">
-                    <button onclick="checkAnswer(event)"></button>
-                    <button onclick="checkAnswer(event)"></button>
-                    <button onclick="checkAnswer(event)"></button>
-                    <button onclick="checkAnswer(event)"></button>
+                    <button class="bg-gray-600"></button>
+                    <button class="bg-gray-600"></button>
+                    <button class="bg-gray-600"></button>
+                    <button class="bg-gray-600"></button>
                 </div>
             </div>
         </div>
     </div>
-    <script type="module" src="script.js"></script>
-
-
-
-
-
+    
+    <script src="script.js"></script>
 </body>
 </html>
