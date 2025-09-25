@@ -26,6 +26,41 @@ let vocabularyData = [];
 let quizWordsList = [];
 let currentQuestionIndex = 0;
 
+// --- Web Storage Functions ---
+const STORAGE_KEY = 'englishLearningVocabulary';
+
+function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(vocabularyData));
+}
+
+function loadData() {
+    const storedData = localStorage.getItem(STORAGE_KEY);
+    if (storedData) {
+        vocabularyData = JSON.parse(storedData);
+    } else {
+        // Add some sample data if no data exists in localStorage
+        vocabularyData = [
+            {
+                id: '1',
+                english: 'Hello',
+                arabic: 'مرحبا',
+                image: '',
+                category: 'Other',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '2',
+                english: 'Book',
+                arabic: 'كتاب',
+                image: '',
+                category: 'Nouns',
+                createdAt: new Date().toISOString()
+            }
+        ];
+        saveData();
+    }
+}
+
 // Custom message box and confirmation dialog
 function showMessage(message) {
     messageBox.textContent = message;
@@ -131,6 +166,7 @@ function addWord() {
     };
     
     vocabularyData.push(newWord);
+    saveData();
     showMessage("✨ Word added successfully!");
     clearInputs();
     displayWords();
@@ -155,6 +191,7 @@ function updateWord() {
         wordToUpdate.arabic = ar;
         wordToUpdate.image = img;
         wordToUpdate.category = category;
+        saveData();
         showMessage("💾 Word updated successfully!");
         clearInputs();
         currentWordId = null;
@@ -169,6 +206,7 @@ async function deleteWord(id) {
     if (!confirmed) return;
 
     vocabularyData = vocabularyData.filter(word => word.id !== id);
+    saveData();
     showMessage("🗑️ Word deleted successfully!");
     displayWords();
 }
@@ -185,7 +223,7 @@ function displayWords() {
     const sortedWords = [...filteredWords].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     if (sortedWords.length === 0) {
-        vocabularyList.innerHTML = '<p style="text-align: center; color: rgba(255, 255, 255, 0.6); margin-top: 2rem; font-size: 1.1rem;">No words found in this category. Add a new word! 📝</p>';
+        vocabularyList.innerHTML = '<p style="text-align: center; color: rgba(0, 0, 0, 0.6); margin-top: 2rem; font-size: 1.1rem;">No words found in this category. Add a new word! 📝</p>';
         return;
     }
 
@@ -403,29 +441,7 @@ quizOptionsBtns.forEach(btn => {
 
 // Initial load
 document.addEventListener('DOMContentLoaded', () => {
+    loadData();
     displayWords();
     userInfoElem.style.display = 'none';
-    
-    // Add some sample data if none exists
-    if (vocabularyData.length === 0) {
-        vocabularyData = [
-            {
-                id: '1',
-                english: 'Hello',
-                arabic: 'مرحبا',
-                image: '',
-                category: 'Other',
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: '2',
-                english: 'Book',
-                arabic: 'كتاب',
-                image: '',
-                category: 'Nouns',
-                createdAt: new Date().toISOString()
-            }
-        ];
-        displayWords();
-    }
 });
