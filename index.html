@@ -3,64 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Learning MRA</title>
+    <title>English Learning MRA - Pixel Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="user-info"></div>
+    
     <div id="message-box"></div>
     <div id="custom-confirm-overlay">
-        <div id="custom-confirm-box">
+        <div id="custom-confirm-box" class="modal-content">
             <p id="confirm-message"></p>
-            <div class="flex justify-center mt-4">
-                <button id="confirm-yes" class="bg-red-600">Yes</button>
-                <button id="confirm-no" class="bg-gray-600 ml-2">No</button>
+            <div class="modal-actions">
+                <button id="confirm-yes" class="btn bg-red-600">Yes</button>
+                <button id="confirm-no" class="btn bg-gray-600">No</button>
             </div>
         </div>
     </div>
     
     <div class="container">
-        <h1>🌟 English Learning App</h1>
+        <h1 class="pixel-title">ENGLISH APP</h1>
 
-        <div class="tabs">
-            <button class="tab-button active" data-tab="vocabulary">📚 Vocabulary</button>
-            <button class="tab-button" data-tab="quiz">🧠 Quiz</button>
-        </div>
+        <nav class="tabs-nav">
+            <button class="nav-btn active" data-tab="vocabulary">📚 Vocabulary</button>
+            <button class="nav-btn" data-tab="quiz">🧠 Quiz</button>
+            <button class="nav-btn" data-tab="settings">⚙️ Settings</button>
+        </nav>
 
-        <div id="vocabulary" class="tab-content active">
-            <h2>Vocabulary Section</h2>
+        <div id="vocabulary" class="page tab-content active">
+            <h2 class="page-title">Vocabulary Section</h2>
             <div class="form-group">
                 <label for="word-en">English Word:</label>
-                <input type="text" id="word-en" placeholder="Enter English word">
+                <input type="text" id="word-en" class="form-control" placeholder="Enter English word">
             </div>
             <div class="form-group">
                 <label for="word-ar">Arabic Word:</label>
-                <input type="text" id="word-ar" placeholder="أدخل الكلمة العربية">
+                <input type="text" id="word-ar" class="form-control" placeholder="أدخل الكلمة العربية">
             </div>
             <div class="form-group">
                 <label for="word-image">Image URL (Optional):</label>
-                <input type="text" id="word-image" placeholder="Enter image URL">
+                <input type="text" id="word-image" class="form-control" placeholder="Enter image URL">
             </div>
             <div class="form-group">
                 <label for="word-category">Category:</label>
-                <select id="word-category">
+                <select id="word-category" class="form-control">
                     <option value="Nouns">Nouns</option>
                     <option value="Verbs">Verbs</option>
                     <option value="Adjectives">Adjectives</option>
                     <option value="Other">Other</option>
                 </select>
             </div>
-            <div class="flex justify-center gap-4 mt-4">
-                <button id="add-word-btn">✨ Add Word</button>
-                <button id="update-word-btn" style="display: none;">💾 Save Changes</button>
+            <div class="flex-actions">
+                <button id="add-word-btn" class="btn btn-primary">✨ Add Word</button>
+                <button id="update-word-btn" class="btn btn-primary" style="display: none;">💾 Save Changes</button>
             </div>
 
-            <hr style="border: 1px solid rgba(255, 255, 255, 0.2); margin: 2rem 0;">
-            <h3>Your Words Collection</h3>
+            <hr class="pixel-divider">
+            <h3 class="page-subtitle">Your Words Collection</h3>
             <div class="form-group">
                 <label for="filter-category">Filter by Category:</label>
-                <select id="filter-category">
+                <select id="filter-category" class="form-control">
                     <option value="All">All</option>
                     <option value="Nouns">Nouns</option>
                     <option value="Verbs">Verbs</option>
@@ -68,33 +70,62 @@
                     <option value="Other">Other</option>
                 </select>
             </div>
-            <div id="vocabulary-list"></div>
+            <div id="vocabulary-list" class="items-grid"></div>
         </div>
 
-        <div id="quiz" class="tab-content">
-            <h2>Quiz Challenge</h2>
+        <div id="quiz" class="page tab-content">
+            <h2 class="page-title">Quiz Challenge</h2>
             <div id="quiz-start" class="quiz-category-selector text-center">
-                <h3>Choose a Category:</h3>
-                <div>
-                    <button class="bg-purple-600" data-category="Nouns">📝 Nouns</button>
-                    <button class="bg-purple-600" data-category="Verbs">⚡ Verbs</button>
-                    <button class="bg-purple-600" data-category="Adjectives">🎨 Adjectives</button>
-                    <button class="bg-purple-600" data-category="Other">🔮 Other</button>
+                <h3 class="page-subtitle">Choose a Category:</h3>
+                <div class="quiz-categories-grid">
+                    <button class="btn bg-purple-600" data-category="Nouns">📝 Nouns</button>
+                    <button class="btn bg-purple-600" data-category="Verbs">⚡ Verbs</button>
+                    <button class="btn bg-purple-600" data-category="Adjectives">🎨 Adjectives</button>
+                    <button class="btn bg-purple-600" data-category="Other">🔮 Other</button>
                 </div>
-                <p id="quiz-message" style="color: #ff6b6b; margin-top: 1rem; font-weight: 500;"></p>
+                <p id="quiz-message" style="color: var(--primary); margin-top: 15px; font-size: 0.7rem;"></p>
             </div>
             
             <div id="quiz-questions" style="display: none;" class="text-center">
-                <p id="quiz-question"></p>
-                <div class="quiz-options">
-                    <button class="bg-gray-600"></button>
-                    <button class="bg-gray-600"></button>
-                    <button class="bg-gray-600"></button>
-                    <button class="bg-gray-600"></button>
+                <p id="quiz-question" class="question-card"></p>
+                <div class="quiz-options items-grid">
+                    <button class="btn quiz-option-btn bg-gray-600"></button>
+                    <button class="btn quiz-option-btn bg-gray-600"></button>
+                    <button class="btn quiz-option-btn bg-gray-600"></button>
+                    <button class="btn quiz-option-btn bg-gray-600"></button>
                 </div>
             </div>
         </div>
-    </div>
+
+        <div id="settings" class="page tab-content">
+            <h2 class="page-title">⚙️ App Settings</h2>
+            
+            <h3 class="page-subtitle">Data Management</h3>
+            
+            <div class="settings-actions">
+                
+                <button id="export-data-btn" class="btn bg-blue-600 btn-full-width">⬇️ Export Data</button>
+                
+                <label for="import-file-hidden" class="btn bg-green-600 btn-full-width">
+                    ⬆️ Import Data
+                    <input type="file" id="import-file-hidden" accept="application/json" style="display: none;">
+                </label>
+            </div>
+
+            <hr class="pixel-divider">
+
+            <h3 class="page-subtitle">Other Links</h3>
+            <div class="form-group">
+                <a href="https://azhari-mra.github.io/My-List/" target="_blank" class="btn bg-purple-600" id="other-website-btn" style="display: block; text-align: center;">My Other Website</a>
+            </div>
+
+        </div>
+        </div>
+    
+    <footer>
+        <p>MRA - English Learning App | Pixel Style Interface</p>
+        <p style="margin-top: 5px;">All Rights Reserved © 2025</p>
+    </footer>
     
     <script src="script.js"></script>
 </body>

@@ -21,6 +21,10 @@ const quizQuestionElem = document.getElementById('quiz-question');
 const quizOptionsBtns = quizQuestionsSection.querySelectorAll('.quiz-options button');
 const quizMessageElem = document.getElementById('quiz-message');
 
+// New Settings Elements
+const exportDataBtn = document.getElementById('export-data-btn');
+const importFileHidden = document.getElementById('import-file-hidden'); // تم تغيير المعرف
+
 let currentWordId = null;
 let vocabularyData = [];
 let quizWordsList = [];
@@ -223,7 +227,7 @@ function displayWords() {
     const sortedWords = [...filteredWords].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     if (sortedWords.length === 0) {
-        vocabularyList.innerHTML = '<p style="text-align: center; color: rgba(0, 0, 0, 0.6); margin-top: 2rem; font-size: 1.1rem;">No words found in this category. Add a new word! 📝</p>';
+        vocabularyList.innerHTML = '<p style="text-align: center; color: rgba(224, 224, 224, 0.6); margin-top: 2rem; font-size: 0.7rem;">No words found in this category. Add a new word! 📝</p>';
         return;
     }
 
@@ -241,8 +245,8 @@ function displayWords() {
             </div>
             ${word.image ? `<img src="${word.image}" alt="${word.english}">` : ''}
             <div class="word-actions">
-                <button class="bg-blue-600 edit-btn" data-id="${word.id}">✏️ Edit</button>
-                <button class="bg-red-600 delete-btn" data-id="${word.id}">🗑️ Delete</button>
+                <button class="btn bg-blue-600 edit-btn" data-id="${word.id}">✏️ Edit</button>
+                <button class="btn bg-red-600 delete-btn" data-id="${word.id}">🗑️ Delete</button>
             </div>
         `;
         vocabularyList.appendChild(wordItem);
@@ -373,6 +377,98 @@ function endQuiz() {
     }, 2000);
 }
 
+
+// --- Settings Functions (Import/Export) ---
+
+function exportData() {
+    if (vocabularyData.length === 0) {
+        showMessage("Export failed: Your vocabulary list is empty. Add some words first! 📝");
+        return;
+    }
+
+    const dataStr = JSON.stringify(vocabularyData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'english_vocabulary_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showMessage("Export successful! Your data has been downloaded. 💾");
+}
+
+function importData(file) {
+    if (!file) {
+        showMessage("Please select a JSON file to import.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            const importedWords = JSON.parse(event.target.result);
+
+            if (!Array.isArray(importedWords)) {
+                showMessage("Import failed: File content is not a valid list of words.");
+                return;
+            }
+
+            let importCount = 0;
+            const newWordsMap = new Map();
+            importedWords.forEach(word => {
+                // Ensure the word has essential properties
+                if (word.english && word.arabic) {
+                    // Check if an identical word (by English word) already exists to prevent simple duplication
+                    const existingWord = vocabularyData.find(
+                        w => w.english.toLowerCase() === word.english.toLowerCase()
+                    );
+                    
+                    if (!existingWord) {
+                        // Generate a new unique ID for the imported word
+                        const newId = Date.now().toString() + Math.random().toString(36).substring(2, 9);
+                        const wordToAdd = {
+                            id: newId, 
+                            english: word.english,
+                            arabic: word.arabic,
+                            image: word.image || '',
+                            category: word.category || 'Other',
+                            createdAt: word.createdAt || new Date().toISOString()
+                        };
+                        newWordsMap.set(newId, wordToAdd);
+                        importCount++;
+                    }
+                }
+            });
+
+            if (importCount === 0) {
+                showMessage("Import completed: No new unique words were added. 🧐");
+                return;
+            }
+
+            // Append new words while keeping existing ones
+            vocabularyData.push(...Array.from(newWordsMap.values()));
+            saveData();
+            displayWords(); // Refresh the list
+            showMessage(`Import successful! Added ${importCount} new words to your collection. ⬆️`);
+
+        } catch (error) {
+            console.error(error);
+            showMessage("Import failed: Error reading or parsing the file. Make sure it's a valid JSON format.");
+        } finally {
+            // Clear the file input value so that the 'change' event fires again 
+            // if the user imports the same file twice in a row
+            importFileHidden.value = '';
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+
 // --- Utility Functions ---
 
 function getRandomWords(arr, num) {
@@ -400,9 +496,9 @@ function speakEnglishWord(text) {
 
 // --- Event Listeners & Initial State ---
 
-document.querySelectorAll('.tab-button').forEach(button => {
+document.querySelectorAll('.nav-btn').forEach(button => {
     button.addEventListener('click', (e) => {
-        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         
         e.target.classList.add('active');
@@ -414,6 +510,18 @@ document.querySelectorAll('.tab-button').forEach(button => {
 addWordBtn.addEventListener('click', addWord);
 updateWordBtn.addEventListener('click', updateWord);
 filterCategorySelect.addEventListener('change', displayWords);
+
+// Settings Event Listeners
+exportDataBtn.addEventListener('click', exportData);
+
+// Import functionality is now triggered by the file input's change event
+importFileHidden.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        importData(file);
+    }
+});
+
 
 // Add enter key support for inputs
 [wordEnInput, wordArInput, wordImageInput].forEach(input => {
@@ -443,5 +551,7 @@ quizOptionsBtns.forEach(btn => {
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
     displayWords();
-    userInfoElem.style.display = 'none';
+    if (userInfoElem) {
+        userInfoElem.style.display = 'none';
+    }
 });
