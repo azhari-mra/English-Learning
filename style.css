@@ -25,6 +25,19 @@ body {
     background-size: 20px 20px;
     padding: 10px;
     min-height: 100vh;
+    
+    /* تفعيل الحركة الجديدة للخلفية */
+    animation: moving-dots 60s linear infinite;
+}
+
+/* الأكواد الجديدة: حركة خلفية النقاط البطيئة */
+@keyframes moving-dots {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 400px 400px; /* تحريك 400 بكسل أفقيًا وعموديًا */
+    }
 }
 
 .container {
@@ -39,11 +52,43 @@ body {
     z-index: 1;
 }
 
+/* تنسيق رأس الصفحة (العنوان والأيقونة) - الترتيب الافتراضي (الشاشات الكبيرة) هو أفقي */
+.title-and-image {
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+    /* لتوسيط المجموعة بالكامل أفقيًا */
+    justify-content: center; 
+    /* تم تقليل المسافة بين العنوان وشريط التنقل */
+    margin-bottom: 15px;
+}
+
+.app-icon {
+    border: none;
+    box-shadow: none;
+    width: 100px; 
+    height: 100px;
+    object-fit: contain;
+    /* أكواد الحركة */
+    animation: float-icon 3s ease-in-out infinite alternate;
+}
+
+/* حركة الأيقونة في الشاشات الكبيرة */
+@keyframes float-icon {
+    0% {
+        transform: translateX(-10px); 
+    }
+    100% {
+        transform: translateX(10px); 
+    }
+}
+
 /* العناوين */
 .pixel-title {
     color: var(--primary);
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 0; 
+    margin-top: 0; 
     font-size: 1.5rem;
     text-shadow: 2px 2px 0 var(--border);
 }
@@ -220,6 +265,17 @@ label {
 .word-details p:first-child {
     font-size: 0.9rem;
     color: var(--primary);
+}
+
+/* تنسيق خاص لحقول الأمثلة الجديدة */
+.word-details .example-text {
+    font-size: 0.65rem; 
+    color: #999; 
+    margin-top: 10px;
+    line-height: 1.4;
+    font-style: italic;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    padding-top: 5px;
 }
 
 .word-item img {
@@ -432,22 +488,17 @@ footer {
 
 /* أنماط خاصة بأزرار الإعدادات لتغطية العرض بالكامل */
 .settings-actions {
-    /* ألغينا flexbox لأننا لا نحتاج لصف واحد */
-    /* display: flex; */ 
     gap: 15px; 
     margin-bottom: 20px;
-    /* لجعل كل زر يأخذ سطر كامل ويكون بينهما مسافة */
     display: block; 
 }
 
 /* التحكم بحجم الأزرار عبر فئة جديدة */
 .settings-actions .btn-full-width {
-    /* تحديد عرض 100% ليغطي عرض الحاوية */
     width: 100%; 
     font-size: 0.8rem; 
-    padding: 15px 15px; /* زيادة الطول قليلاً */
-    margin-bottom: 15px; /* إضافة مسافة بين الأزرار */
-    /* للتأكد أن الزر يعمل كـ block ويمتد للعرض الكامل */
+    padding: 15px 15px; 
+    margin-bottom: 15px; 
     display: block; 
     text-align: center;
 }
@@ -457,9 +508,6 @@ footer {
 @media (max-width: 768px) {
     .container {
         padding: 20px;
-    }
-    .pixel-title {
-        font-size: 1.2rem;
     }
     .tabs-nav {
         flex-direction: column;
@@ -480,56 +528,26 @@ footer {
     .speak-btn {
         align-self: flex-start;
     }
-}
-
-
-
-
-
-/* هذا هو التعديل المطلوب لتركيز العنوان والصورة في المنتصف */
-.title-and-image {
-    display: flex; 
-    align-items: center; 
-    gap: 20px; 
-
-    /* الخاصية الجديدة والمهمة لجعلهما في منتصف الصفحة */
-    justify-content: center; 
     
-    margin-bottom: 25px; 
-}
-
-/* بقية التنسيقات تبقى كما هي */
-.app-icon {
-    border: none;
-    box-shadow: none;
-    /* لاحظ أن الحجم هو 60x60 بكسل بناءً على الكود الذي أرسلته */
-    width: 200px; 
-    height: 200px;
-    object-fit: contain;
-
-    /* أكواد الحركة المضافة هنا */
-    animation: float-icon 2s ease-in-out infinite alternate;
-}
-
-.pixel-title {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
-.app-icon {
-    /* ... التنسيقات الأخرى (الحجم، border: none) ... */
-
-    /* أكواد الحركة المضافة أو المحدثة */
-    animation: float-icon 3s ease-in-out infinite alternate;
-}
-
-@keyframes float-icon {
-    0% {
-        transform: translateX(-10px); /* 10 بكسل يساراً */
+    /* التعديل لتكون الصورة فوق العنوان في الجوال (flex-direction: column) */
+    .title-and-image {
+        flex-direction: column; 
+        gap: 10px; 
+        margin-bottom: 20px;
     }
-    100% {
-        transform: translateX(45px); /* 10 بكسل يميناً */
+    
+    .pixel-title {
+        font-size: 1rem; 
+        margin-bottom: 0;
+    }
+    .app-icon {
+        width: 80px; 
+        height: 80px;
+    }
+
+    /* حركة الأيقونة عمودية فقط في الجوال */
+    @keyframes float-icon {
+        0% { transform: translateY(-5px); }
+        100% { transform: translateY(5px); }
     }
 }
-
-

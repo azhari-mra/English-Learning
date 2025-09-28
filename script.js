@@ -8,6 +8,10 @@ const userInfoElem = document.getElementById('user-info');
 
 const wordEnInput = document.getElementById('word-en');
 const wordArInput = document.getElementById('word-ar');
+// العناصر الجديدة (للامثلة)
+const exampleEnInput = document.getElementById('example-en');
+const exampleArInput = document.getElementById('example-ar');
+// نهاية العناصر الجديدة
 const wordImageInput = document.getElementById('word-image');
 const wordCategorySelect = document.getElementById('word-category');
 const addWordBtn = document.getElementById('add-word-btn');
@@ -48,6 +52,9 @@ function loadData() {
                 id: '1',
                 english: 'Hello',
                 arabic: 'مرحبا',
+                // حقول المثال الجديدة
+                exampleEn: 'Hello, how are you?',
+                exampleAr: 'مرحبا، كيف حالك؟',
                 image: '',
                 category: 'Other',
                 createdAt: new Date().toISOString()
@@ -56,6 +63,9 @@ function loadData() {
                 id: '2',
                 english: 'Book',
                 arabic: 'كتاب',
+                // حقول المثال الجديدة
+                exampleEn: 'I am reading a good book.',
+                exampleAr: 'أنا أقرأ كتاباً جيداً.',
                 image: '',
                 category: 'Nouns',
                 createdAt: new Date().toISOString()
@@ -63,6 +73,13 @@ function loadData() {
         ];
         saveData();
     }
+    
+    // تأكد من وجود حقول المثال في البيانات القديمة المحفوظة (للبيانات التي تم إدخالها قبل التحديث)
+    vocabularyData = vocabularyData.map(word => ({
+        ...word,
+        exampleEn: word.exampleEn || '',
+        exampleAr: word.exampleAr || ''
+    }));
 }
 
 // Custom message box and confirmation dialog
@@ -152,6 +169,10 @@ function playCorrectSound() {
 function addWord() {
     const en = wordEnInput.value.trim();
     const ar = wordArInput.value.trim();
+    // الحصول على قيم الأمثلة الجديدة
+    const exEn = exampleEnInput.value.trim();
+    const exAr = exampleArInput.value.trim();
+    // نهاية الحصول على قيم الأمثلة الجديدة
     const img = wordImageInput.value.trim();
     const category = wordCategorySelect.value;
 
@@ -164,6 +185,8 @@ function addWord() {
         id: Date.now().toString(),
         english: en,
         arabic: ar,
+        exampleEn: exEn, // إضافة الحقل
+        exampleAr: exAr, // إضافة الحقل
         image: img,
         category: category,
         createdAt: new Date().toISOString()
@@ -181,6 +204,10 @@ function updateWord() {
 
     const en = wordEnInput.value.trim();
     const ar = wordArInput.value.trim();
+    // الحصول على قيم الأمثلة الجديدة
+    const exEn = exampleEnInput.value.trim();
+    const exAr = exampleArInput.value.trim();
+    // نهاية الحصول على قيم الأمثلة الجديدة
     const img = wordImageInput.value.trim();
     const category = wordCategorySelect.value;
     
@@ -193,6 +220,8 @@ function updateWord() {
     if (wordToUpdate) {
         wordToUpdate.english = en;
         wordToUpdate.arabic = ar;
+        wordToUpdate.exampleEn = exEn; // تحديث الحقل
+        wordToUpdate.exampleAr = exAr; // تحديث الحقل
         wordToUpdate.image = img;
         wordToUpdate.category = category;
         saveData();
@@ -234,12 +263,28 @@ function displayWords() {
     sortedWords.forEach(word => {
         const wordItem = document.createElement('div');
         wordItem.className = 'word-item';
+        
+        // بناء جملة المثال للعرض
+        let exampleHtml = '';
+        if (word.exampleEn || word.exampleAr) {
+            exampleHtml += `<div class="example-text">`;
+            if (word.exampleEn) {
+                exampleHtml += `<p style="direction: ltr;">Ex: ${word.exampleEn}</p>`;
+            }
+            if (word.exampleAr) {
+                exampleHtml += `<p style="direction: rtl;">مثال: ${word.exampleAr}</p>`;
+            }
+            exampleHtml += `</div>`;
+        }
+        // نهاية بناء جملة المثال
+
         wordItem.innerHTML = `
             <div class="word-content">
                 <div class="word-details">
                     <p>${word.english}</p>
                     <p>${word.arabic}</p>
                     <p>Category: ${word.category}</p>
+                    ${exampleHtml}
                 </div>
                 <button class="speak-btn" data-word="${word.english}"></button>
             </div>
@@ -259,6 +304,10 @@ function displayWords() {
             if (wordToEdit) {
                 wordEnInput.value = wordToEdit.english;
                 wordArInput.value = wordToEdit.arabic;
+                // ملء حقول الأمثلة
+                exampleEnInput.value = wordToEdit.exampleEn || ''; 
+                exampleArInput.value = wordToEdit.exampleAr || '';
+                // نهاية ملء حقول الأمثلة
                 wordImageInput.value = wordToEdit.image || '';
                 wordCategorySelect.value = wordToEdit.category;
                 currentWordId = id;
@@ -289,6 +338,8 @@ function displayWords() {
 function clearInputs() {
     wordEnInput.value = '';
     wordArInput.value = '';
+    exampleEnInput.value = ''; // مسح حقل المثال
+    exampleArInput.value = ''; // مسح حقل المثال
     wordImageInput.value = '';
     wordCategorySelect.value = 'Nouns';
 }
@@ -434,6 +485,10 @@ function importData(file) {
                             id: newId, 
                             english: word.english,
                             arabic: word.arabic,
+                            // تأكد من إضافة الحقول الجديدة عند الاستيراد
+                            exampleEn: word.exampleEn || '',
+                            exampleAr: word.exampleAr || '',
+                            // نهاية إضافة الحقول الجديدة
                             image: word.image || '',
                             category: word.category || 'Other',
                             createdAt: word.createdAt || new Date().toISOString()
@@ -524,7 +579,7 @@ importFileHidden.addEventListener('change', (e) => {
 
 
 // Add enter key support for inputs
-[wordEnInput, wordArInput, wordImageInput].forEach(input => {
+[wordEnInput, wordArInput, exampleEnInput, exampleArInput, wordImageInput].forEach(input => {
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             if (currentWordId) {
