@@ -481,3 +481,55 @@ footer {
         align-self: flex-start;
     }
 }
+
+
+
+
+
+/* هذا هو التعديل المطلوب لتركيز العنوان والصورة في المنتصف */
+.title-and-image {
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+
+    /* الخاصية الجديدة والمهمة لجعلهما في منتصف الصفحة */
+    justify-content: center; 
+    
+    margin-bottom: 25px; 
+}
+
+/* بقية التنسيقات تبقى كما هي */
+.app-icon {
+    border: none;
+    box-shadow: none;
+    /* لاحظ أن الحجم هو 60x60 بكسل بناءً على الكود الذي أرسلته */
+    width: 200px; 
+    height: 200px;
+    object-fit: contain;
+
+    /* أكواد الحركة المضافة هنا */
+    animation: float-icon 2s ease-in-out infinite alternate;
+}
+
+.pixel-title {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.app-icon {
+    /* ... التنسيقات الأخرى (الحجم، border: none) ... */
+
+    /* أكواد الحركة المضافة أو المحدثة */
+    animation: float-icon 3s ease-in-out infinite alternate;
+}
+
+@keyframes float-icon {
+    0% {
+        transform: translateX(-10px); /* 10 بكسل يساراً */
+    }
+    100% {
+        transform: translateX(45px); /* 10 بكسل يميناً */
+    }
+}
+
+
