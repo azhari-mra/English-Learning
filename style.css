@@ -551,3 +551,214 @@ footer {
         100% { transform: translateY(5px); }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+/* ... (Existing CSS content) ... */
+
+/* شبكة المفردات والاختبار */
+/* ... (items-grid existing styles) ... */
+
+/* قسم الاختبار */
+/* ... (quiz-category-selector existing styles) ... */
+
+/* START NEW MEMORY GAME STYLES */
+
+.memory-grid {
+    display: grid;
+    /* سيتم تحديد الأعمدة بواسطة JavaScript بناءً على عدد البطاقات */
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.memory-card {
+    perspective: 1000px;
+    height: 80px; /* ارتفاع ثابت للبطاقة */
+    cursor: pointer;
+}
+
+.memory-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    box-shadow: 4px 4px 0 var(--border);
+    border: 3px solid var(--border);
+}
+
+.memory-card.flipped .memory-card-inner {
+    transform: rotateY(180deg);
+}
+
+/* نمط لبطاقة تم فتحها بشكل صحيح وثابتة */
+.memory-card.matched .memory-card-inner {
+    box-shadow: 4px 4px 0 #4CAF50; /* ظل أخضر */
+    border-color: #4CAF50;
+    cursor: default;
+}
+
+.memory-card-front, .memory-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 5px;
+}
+
+.memory-card-front {
+    background-color: var(--primary); /* لون خلفية بطاقة الوجه (البيكسل الأحمر) */
+    color: var(--dark);
+    transform: rotateY(180deg);
+    /* تظليل طفيف للبيكسل */
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.memory-card-back {
+    background-color: var(--gray); /* لون خلفية بطاقة الظهر */
+    color: var(--light-gray);
+    /* نص Placeholder */
+    content: '🧩';
+    font-size: 1.5rem;
+}
+.memory-card-back::before {
+    content: 'Click!';
+    font-size: 0.6rem;
+    color: #555;
+}
+
+/* Mobile adjustments for card size */
+@media (max-width: 450px) {
+    .memory-card {
+        height: 60px; 
+    }
+    .memory-card-front, .memory-card-back {
+        font-size: 0.6rem;
+    }
+}
+/* END NEW MEMORY GAME STYLES */
+
+/* ... (Remaining existing CSS content) ... */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ... (Existing CSS content) ... */
+
+/* START NEW MEMORY GAME STYLES */
+
+.memory-grid {
+    display: grid;
+    /* سيتم تحديد الأعمدة بواسطة JavaScript بناءً على عدد البطاقات */
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.memory-card {
+    perspective: 1000px;
+    height: 80px; /* ارتفاع ثابت للبطاقة */
+    cursor: pointer;
+}
+
+.memory-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    box-shadow: 4px 4px 0 var(--border);
+    border: 3px solid var(--border);
+}
+
+.memory-card.flipped .memory-card-inner {
+    transform: rotateY(180deg);
+}
+
+/* نمط لبطاقة تم فتحها بشكل صحيح وثابتة */
+.memory-card.matched .memory-card-inner {
+    box-shadow: 4px 4px 0 #4CAF50; /* ظل أخضر */
+    border-color: #4CAF50;
+    cursor: default;
+}
+
+.memory-card-front, .memory-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* تم تعديل حجم الخط ليتناسب مع الكلمات الطويلة */
+    font-size: 0.6rem; 
+    font-weight: bold;
+    padding: 5px;
+    /* إضافة كسر الكلمات الطويلة لتجنب تجاوز حدود المربع */
+    word-break: break-all;
+    overflow: hidden; /* لضمان عدم خروج أي جزء قد لا يكسر */
+}
+
+.memory-card-front {
+    background-color: var(--primary); /* لون خلفية بطاقة الوجه (البيكسل الأحمر) */
+    color: var(--dark);
+    transform: rotateY(180deg);
+    /* تظليل طفيف للبيكسل */
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.memory-card-back {
+    background-color: var(--gray); /* لون خلفية بطاقة الظهر */
+    color: var(--light-gray);
+    /* نص Placeholder */
+    content: '🧩';
+    font-size: 1.5rem;
+}
+.memory-card-back::before {
+    content: 'Click!';
+    font-size: 0.6rem;
+    color: #555;
+}
+
+/* Mobile adjustments for card size */
+@media (max-width: 450px) {
+    .memory-card {
+        height: 60px; 
+    }
+    .memory-card-front, .memory-card-back {
+        font-size: 0.5rem; /* تعديل إضافي للجوال */
+    }
+}
+/* END NEW MEMORY GAME STYLES */
+
+/* ... (Remaining existing CSS content) ... */

@@ -29,6 +29,7 @@
         <nav class="tabs-nav">
             <button class="nav-btn active" data-tab="vocabulary">📚 Vocabulary</button>
             <button class="nav-btn" data-tab="quiz">🧠 Quiz</button>
+            <button class="nav-btn" data-tab="memory">🧩 Memory</button>
             <button class="nav-btn" data-tab="settings">⚙️ Settings</button>
         </nav>
         
@@ -107,7 +108,46 @@
                 </div>
             </div>
         </div>
+        
+        <div id="memory" class="page tab-content">
+            <h2 class="page-title">🧩 Memory Game</h2>
+            
+            <div id="memory-start" class="quiz-category-selector text-center">
+                <h3 class="page-subtitle">Choose a Category:</h3>
+                <div id="memory-categories-grid" class="quiz-categories-grid">
+                    <button class="btn bg-purple-600" data-category="Nouns">📝 Nouns</button>
+                    <button class="btn bg-purple-600" data-category="Verbs">⚡ Verbs</button>
+                    <button class="btn bg-purple-600" data-category="Adjectives">🎨 Adjectives</button>
+                    <button class="btn bg-purple-600" data-category="Other">🔮 Other</button>
+                </div>
+                <p id="memory-message" style="color: var(--primary); margin-top: 15px; font-size: 0.7rem;"></p>
+                
+                <hr class="pixel-divider">
 
+                <h3 class="page-subtitle">Choose Difficulty:</h3>
+                <div id="memory-difficulty-grid" class="quiz-categories-grid">
+                    <button class="btn bg-blue-600 memory-difficulty-btn" data-difficulty="6">🟢 Easy (6 Words)</button>
+                    <button class="btn bg-blue-600 memory-difficulty-btn" data-difficulty="10">🟡 Medium (10 Words)</button>
+                    <button class="btn bg-blue-600 memory-difficulty-btn" data-difficulty="15">🔴 Hard (15 Words)</button>
+                </div>
+                <p id="memory-difficulty-info" style="color: var(--light-gray); margin-top: 15px; font-size: 0.7rem;">
+                    Current Difficulty: **Easy**
+                </p>
+
+            </div>
+
+            <div id="memory-game" style="display: none;">
+                <p id="game-info" class="text-center" style="font-size: 0.7rem; margin-bottom: 15px;">
+                    **Level:** <span id="memory-level">1</span> | **Tries:** <span id="memory-tries">0</span>
+                </p>
+                <div id="memory-grid" class="memory-grid">
+                    
+                </div>
+                <button id="memory-restart-btn" class="btn bg-red-600" style="width: 100%; margin-top: 20px;">
+                    🛑 End Game & Choose New Category
+                </button>
+            </div>
+        </div>
         <div id="settings" class="page tab-content">
             <h2 class="page-title">⚙️ App Settings</h2>
             

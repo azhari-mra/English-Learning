@@ -25,6 +25,20 @@ const quizQuestionElem = document.getElementById('quiz-question');
 const quizOptionsBtns = quizQuestionsSection.querySelectorAll('.quiz-options button');
 const quizMessageElem = document.getElementById('quiz-message');
 
+// NEW MEMORY GAME ELEMENTS
+const memoryStartSection = document.getElementById('memory-start');
+const memoryGameSection = document.getElementById('memory-game');
+const memoryCategoriesGrid = document.getElementById('memory-categories-grid');
+const memoryMessageElem = document.getElementById('memory-message');
+const memoryGrid = document.getElementById('memory-grid');
+const memoryRestartBtn = document.getElementById('memory-restart-btn');
+const memoryLevelElem = document.getElementById('memory-level');
+const memoryTriesElem = document.getElementById('memory-tries');
+// عناصر الصعوبة الجديدة
+const memoryDifficultyBtns = document.querySelectorAll('.memory-difficulty-btn');
+const memoryDifficultyInfo = document.getElementById('memory-difficulty-info');
+
+
 // New Settings Elements
 const exportDataBtn = document.getElementById('export-data-btn');
 const importFileHidden = document.getElementById('import-file-hidden'); // تم تغيير المعرف
@@ -34,8 +48,30 @@ let vocabularyData = [];
 let quizWordsList = [];
 let currentQuestionIndex = 0;
 
+// NEW MEMORY GAME STATE
+let memoryCards = [];
+let flippedCards = [];
+let lockBoard = false;
+let matchedPairs = 0;
+let memoryGameTries = 0;
+let memoryGameLevel = 1;
+// تم تعديل الحد الأدنى ليتناسب مع المستوى الأسهل
+const MEMORY_MIN_WORDS = 3; 
+// متغير جديد لتخزين عدد الكلمات المطلوبة
+let currentDifficultyWordCount = 6; 
+let currentMemoryCategory = null;
+
+const WIN_MESSAGES = [
+    "🌟 فوز رائع! ذاكرتك خارقة!",
+    "🎉 أحسنت! أنت محترف في الحفظ.",
+    "🥳 مهمة مكتملة بنجاح! كلمة السر هي التركيز.",
+    "😎 لقد هزمت اللعبة! استراحة قصيرة ثم التحدي القادم.",
+    "💯 بطل الذاكرة الجديد!"
+];
+
 // --- Web Storage Functions ---
 const STORAGE_KEY = 'englishLearningVocabulary';
+const MEMORY_LEVEL_KEY = 'memoryGameLevel';
 
 function saveData() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(vocabularyData));
@@ -48,28 +84,23 @@ function loadData() {
     } else {
         // Add some sample data if no data exists in localStorage
         vocabularyData = [
-            {
-                id: '1',
-                english: 'Hello',
-                arabic: 'مرحبا',
-                // حقول المثال الجديدة
-                exampleEn: 'Hello, how are you?',
-                exampleAr: 'مرحبا، كيف حالك؟',
-                image: '',
-                category: 'Other',
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: '2',
-                english: 'Book',
-                arabic: 'كتاب',
-                // حقول المثال الجديدة
-                exampleEn: 'I am reading a good book.',
-                exampleAr: 'أنا أقرأ كتاباً جيداً.',
-                image: '',
-                category: 'Nouns',
-                createdAt: new Date().toISOString()
-            }
+            // Sample data for memory game testing (ensure at least 6 words for Nouns)
+            { id: '1', english: 'Hello', arabic: 'مرحبا', exampleEn: 'Hello, how are you?', exampleAr: 'مرحبا، كيف حالك؟', image: '', category: 'Other', createdAt: new Date().toISOString() },
+            { id: '2', english: 'Book', arabic: 'كتاب', exampleEn: 'I am reading a good book.', exampleAr: 'أنا أقرأ كتاباً جيداً.', image: '', category: 'Nouns', createdAt: new Date().toISOString() },
+            { id: '3', english: 'Cat', arabic: 'قطة', exampleEn: 'The cat is sleeping.', exampleAr: 'القطة نائمة.', image: '', category: 'Nouns', createdAt: new Date().toISOString() },
+            { id: '4', english: 'Run', arabic: 'يركض', exampleEn: 'He runs fast.', exampleAr: 'هو يركض بسرعة.', image: '', category: 'Verbs', createdAt: new Date().toISOString() },
+            { id: '5', english: 'Happy', arabic: 'سعيد', exampleEn: 'She is happy today.', exampleAr: 'هي سعيدة اليوم.', image: '', category: 'Adjectives', createdAt: new Date().toISOString() },
+            { id: '6', english: 'House', arabic: 'منزل', exampleEn: 'A big house.', exampleAr: 'منزل كبير.', image: '', category: 'Nouns', createdAt: new Date().toISOString() },
+            { id: '7', english: 'Dog', arabic: 'كلب', exampleEn: 'The dog is barking.', exampleAr: 'الكلب ينبح.', image: '', category: 'Nouns', createdAt: new Date().toISOString() },
+            { id: '8', english: 'Eat', arabic: 'يأكل', exampleEn: 'Time to eat lunch.', exampleAr: 'حان وقت أكل الغداء.', image: '', category: 'Verbs', createdAt: new Date().toISOString() },
+            { id: '9', english: 'New', arabic: 'جديد', exampleEn: 'I bought a new car.', exampleAr: 'اشتريت سيارة جديدة.', image: '', category: 'Adjectives', createdAt: new Date().toISOString() },
+            // كلمات إضافية لتجربة الصعوبة
+            { id: '10', english: 'Beautiful', arabic: 'جميل', exampleEn: 'A beautiful painting.', exampleAr: 'لوحة جميلة.', image: '', category: 'Adjectives', createdAt: new Date().toISOString() },
+            { id: '11', english: 'Computer', arabic: 'حاسوب', exampleEn: 'I use my computer for work.', exampleAr: 'أستخدم حاسوبي للعمل.', image: '', category: 'Nouns', createdAt: new Date().toISOString() },
+            { id: '12', english: 'Program', arabic: 'برنامج', exampleEn: 'He is writing a program.', exampleAr: 'هو يكتب برنامجاً.', image: '', category: 'Nouns', createdAt: new Date().toISOString() },
+            { id: '13', english: 'Understand', arabic: 'يفهم', exampleEn: 'Do you understand the lesson?', exampleAr: 'هل تفهم الدرس؟', image: '', category: 'Verbs', createdAt: new Date().toISOString() },
+            { id: '14', english: 'Fast', arabic: 'سريع', exampleEn: 'The car is very fast.', exampleAr: 'السيارة سريعة جداً.', image: '', category: 'Adjectives', createdAt: new Date().toISOString() },
+            { id: '15', english: 'Dream', arabic: 'حلم', exampleEn: 'I had a strange dream.', exampleAr: 'رأيت حلماً غريباً.', image: '', category: 'Nouns', createdAt: new Date().toISOString() },
         ];
         saveData();
     }
@@ -80,16 +111,28 @@ function loadData() {
         exampleEn: word.exampleEn || '',
         exampleAr: word.exampleAr || ''
     }));
+    
+    // Load memory game level
+    const storedLevel = localStorage.getItem(MEMORY_LEVEL_KEY);
+    if (storedLevel) {
+        memoryGameLevel = parseInt(storedLevel, 10);
+    }
+    updateGameInfoDisplay();
+    updateDifficultyDisplay(); // تحديث عرض الصعوبة الافتراضي
+}
+
+function saveMemoryLevel() {
+    localStorage.setItem(MEMORY_LEVEL_KEY, memoryGameLevel.toString());
 }
 
 // Custom message box and confirmation dialog
 function showMessage(message) {
     messageBox.textContent = message;
 
-    if (message.includes("Incorrect!")) {
+    if (message.includes("Incorrect!") || message.includes("❌")) {
         messageBox.classList.remove('correct');
         messageBox.classList.add('incorrect');
-    } else if (message.includes("Correct!")) {
+    } else if (message.includes("Correct!") || message.includes("🎉") || message.includes("🏆") || message.includes("🌟")) {
         messageBox.classList.remove('incorrect');
         messageBox.classList.add('correct');
     } else {
@@ -429,6 +472,215 @@ function endQuiz() {
 }
 
 
+// --- MEMORY GAME Functions ---
+
+function updateDifficultyDisplay() {
+    const difficultyName = 
+        currentDifficultyWordCount === 6 ? 'Easy' : 
+        currentDifficultyWordCount === 10 ? 'Medium' : 'Hard';
+    memoryDifficultyInfo.innerHTML = `Current Difficulty: **${difficultyName} (${currentDifficultyWordCount} Words)**`;
+
+    // Highlight the active difficulty button
+    memoryDifficultyBtns.forEach(btn => {
+        if (parseInt(btn.dataset.difficulty) === currentDifficultyWordCount) {
+            btn.classList.remove('bg-blue-600');
+            btn.classList.add('bg-purple-600');
+        } else {
+            btn.classList.remove('bg-purple-600');
+            btn.classList.add('bg-blue-600');
+        }
+    });
+}
+
+function updateGameInfoDisplay() {
+    memoryLevelElem.textContent = memoryGameLevel;
+    memoryTriesElem.textContent = memoryGameTries;
+}
+
+function startMemoryGame(category) {
+    const filteredWords = vocabularyData.filter(w => w.category === category);
+    currentMemoryCategory = category;
+    memoryMessageElem.textContent = ''; // Clear message
+
+    // Check if enough words exist for the selected difficulty
+    if (filteredWords.length < currentDifficultyWordCount) {
+        memoryMessageElem.textContent = `❌ Cannot start game. The '${category}' category needs at least ${currentDifficultyWordCount} words for the selected difficulty.`;
+        return;
+    }
+
+    // Select a random set of words based on the chosen difficulty
+    const selectedWords = getRandomWords(filteredWords, currentDifficultyWordCount);
+    
+    // Prepare cards: English and Arabic pairs
+    let gameWords = selectedWords.map(word => ([
+        { id: word.id, content: word.english, lang: 'en', matched: false },
+        { id: word.id, content: word.arabic, lang: 'ar', matched: false }
+    ])).flat();
+
+    // Shuffle and reset state
+    memoryCards = shuffleArray(gameWords);
+    matchedPairs = 0;
+    memoryGameTries = 0;
+    flippedCards = [];
+    lockBoard = false;
+    updateGameInfoDisplay();
+
+    // UI visibility
+    memoryStartSection.style.display = 'none';
+    memoryGameSection.style.display = 'block';
+
+    // Generate grid
+    generateMemoryGrid(memoryCards.length);
+}
+
+function generateMemoryGrid(cardCount) {
+    memoryGrid.innerHTML = '';
+    
+    // Determine grid columns: 12 cards (4x3), 20 cards (5x4), 30 cards (6x5)
+    let columns;
+    if (cardCount === 12) { // 6 words (4x3)
+        columns = 4;
+    } else if (cardCount === 20) { // 10 words (5x4)
+        columns = 4;
+    } else if (cardCount === 30) { // 15 words (6x5)
+        columns = 5; 
+    } else {
+        // Fallback for custom counts (should not happen with default difficulties)
+        columns = 4;
+    }
+
+    memoryGrid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+
+    memoryCards.forEach((card, index) => {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'memory-card';
+        cardElement.dataset.index = index; // Use index to reference the card in the array
+        
+        cardElement.innerHTML = `
+            <div class="memory-card-inner">
+                <div class="memory-card-front">${card.content}</div>
+                <div class="memory-card-back"></div>
+            </div>
+        `;
+
+        cardElement.addEventListener('click', flipCard);
+        memoryGrid.appendChild(cardElement);
+    });
+}
+
+function flipCard() {
+    if (lockBoard) return;
+    const cardElement = this;
+    const index = parseInt(cardElement.dataset.index);
+    const cardData = memoryCards[index];
+
+    // Don't flip a card that is already matched or already flipped
+    if (cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) return;
+    // Don't flip the second card if it's the same card element
+    if (flippedCards.length === 1 && flippedCards[0].element === cardElement) return;
+
+    // Flip the card
+    cardElement.classList.add('flipped');
+    flippedCards.push({ element: cardElement, data: cardData, index: index });
+
+    if (flippedCards.length === 2) {
+        lockBoard = true;
+        memoryGameTries++;
+        updateGameInfoDisplay();
+        checkForMatch();
+    }
+}
+
+function checkForMatch() {
+    const [card1, card2] = flippedCards;
+    
+    const isMatch = card1.data.id === card2.data.id;
+    
+    if (isMatch) {
+        // Correct match!
+        playCorrectSound();
+        showMessage("Correct! Pair found. 👍");
+        disableCards(card1.element, card2.element);
+        matchedPairs++;
+        if (matchedPairs === memoryCards.length / 2) {
+            winGame();
+        }
+    } else {
+        // Incorrect match! Reset all cards and start over.
+        playIncorrectSound();
+        showMessage("❌ Incorrect! Resetting the board. You must complete the sequence correctly!");
+        
+        // Use a small delay to allow the user to see the second card before reset
+        setTimeout(() => {
+            unflipAllCardsAndResetGame();
+        }, 1200);
+    }
+}
+
+function disableCards(card1Element, card2Element) {
+    // Visually mark them as matched and remove click listener for safety
+    card1Element.classList.add('matched');
+    card2Element.classList.add('matched');
+    card1Element.removeEventListener('click', flipCard);
+    card2Element.removeEventListener('click', flipCard);
+    
+    // Clear state after successful match
+    flippedCards = [];
+    lockBoard = false;
+}
+
+function unflipAllCardsAndResetGame() {
+    // Unflip all currently flipped cards
+    document.querySelectorAll('.memory-card.flipped').forEach(card => {
+        card.classList.remove('flipped');
+    });
+
+    // Remove 'matched' class from all cards
+    document.querySelectorAll('.memory-card.matched').forEach(card => {
+        card.classList.remove('matched');
+        card.addEventListener('click', flipCard); // Re-add listener
+    });
+
+    // Reset game state
+    matchedPairs = 0;
+    flippedCards = [];
+    lockBoard = false;
+    memoryGameTries = 0; // Reset tries as required by the rule
+    updateGameInfoDisplay();
+    showMessage("Game reset. Start a new sequence! 🔄");
+}
+
+function winGame() {
+    memoryGameLevel++;
+    saveMemoryLevel();
+
+    let winMessage;
+    // Special message for every 10 wins
+    if ((memoryGameLevel - 1) % 10 === 0) {
+        winMessage = `🎉 خذ صورة للشاشة وارسلها لي أحسنت! تستحق 5 ريال 🎉 (Level ${memoryGameLevel-1} Complete!)`;
+    } else {
+        // Random message from the list
+        winMessage = getRandomElement(WIN_MESSAGES) + ` (Level ${memoryGameLevel-1} Complete!)`;
+    }
+
+    showMessage(winMessage);
+    playCorrectSound(); // Play a nice sound on win
+
+    // Go back to category selection after a short delay
+    setTimeout(() => {
+        memoryGameSection.style.display = 'none';
+        memoryStartSection.style.display = 'flex';
+        updateGameInfoDisplay(); // Update level display on the main page too
+    }, 4000);
+}
+
+function endGameAndReset() {
+    memoryGameSection.style.display = 'none';
+    memoryStartSection.style.display = 'flex';
+    memoryGrid.innerHTML = '';
+    memoryMessageElem.textContent = 'Game ended. Choose a new category to play.';
+}
+
 // --- Settings Functions (Import/Export) ---
 
 function exportData() {
@@ -499,11 +751,6 @@ function importData(file) {
                 }
             });
 
-            if (importCount === 0) {
-                showMessage("Import completed: No new unique words were added. 🧐");
-                return;
-            }
-
             // Append new words while keeping existing ones
             vocabularyData.push(...Array.from(newWordsMap.values()));
             saveData();
@@ -527,8 +774,10 @@ function importData(file) {
 // --- Utility Functions ---
 
 function getRandomWords(arr, num) {
+    // Ensure we don't try to get more words than available
+    const count = Math.min(num, arr.length);
     const shuffled = [...arr].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, num);
+    return shuffled.slice(0, count);
 }
 
 function shuffleArray(array) {
@@ -537,6 +786,10 @@ function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
+}
+
+function getRandomElement(array) {
+    return array[Math.floor(Math.random() * array.length)];
 }
 
 function speakEnglishWord(text) {
@@ -559,6 +812,11 @@ document.querySelectorAll('.nav-btn').forEach(button => {
         e.target.classList.add('active');
         const tabId = e.target.dataset.tab;
         document.getElementById(tabId).classList.add('active');
+        
+        // Optional: Hide the game and show start selection if switching back to memory tab
+        if (tabId === 'memory') {
+             endGameAndReset();
+        }
     });
 });
 
@@ -601,6 +859,31 @@ document.querySelectorAll('#quiz-start button[data-category]').forEach(button =>
 quizOptionsBtns.forEach(btn => {
     btn.addEventListener('click', checkAnswer);
 });
+
+
+// NEW MEMORY GAME EVENT LISTENERS
+document.querySelectorAll('#memory-categories-grid button[data-category]').forEach(button => {
+    button.addEventListener('click', (e) => {
+        const category = e.target.dataset.category;
+        startMemoryGame(category);
+    });
+});
+
+// Event listener for difficulty buttons
+memoryDifficultyBtns.forEach(button => {
+    button.addEventListener('click', (e) => {
+        const newDifficulty = parseInt(e.target.dataset.difficulty);
+        if (newDifficulty !== currentDifficultyWordCount) {
+            currentDifficultyWordCount = newDifficulty;
+            updateDifficultyDisplay();
+            showMessage(`Difficulty set to ${newDifficulty} words.`);
+            // Reset state to ensure the user selects a category again
+            endGameAndReset();
+        }
+    });
+});
+
+memoryRestartBtn.addEventListener('click', endGameAndReset);
 
 // Initial load
 document.addEventListener('DOMContentLoaded', () => {
